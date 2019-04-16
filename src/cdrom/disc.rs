@@ -45,7 +45,10 @@ impl Disc {
         // fallback on `extract_system_region`
         match self.serial.region() {
             Some(r) => r,
-            None => panic!("Can't establish the region of {}", self.serial),
+            None => match extract_system_region(&*self.image) {
+                Ok(r) => r,
+                Err(_e) => panic!("Can't establish the region of {}", self.serial),
+            }
         }
     }
 
@@ -88,7 +91,7 @@ impl Image for MissingImage {
         panic!("Missing CD image!");
     }
 
-    fn read_sector(&mut self, _: &mut Sector, _: Msf) -> Result<(), CdError> {
+    fn read_sector(&self, _: &mut Sector, _: Msf) -> Result<(), CdError> {
         panic!("Missing CD image!");
     }
 
@@ -178,7 +181,7 @@ impl fmt::Display for SerialNumber {
 /// Attempt to discover the region of the disc using the license
 /// string stored in the system area of the official PlayStation
 /// ISO filesystem.
-pub fn extract_system_region(image: &mut Image) -> Result<Region, CdError> {
+pub fn extract_system_region(image: &Image) -> Result<Region, CdError> {
     // In order to identify the type of disc we're going to use
     // sector 00:00:04 from Track01 which should contain the
     // "Licensed by..."  string.
@@ -281,9 +284,11 @@ fn extract_serial_number(image: &mut Image) -> Option<SerialNumber> {
 
     if serial.is_none() {
         warn!("Unexpected bin name: {}", String::from_utf8_lossy(bin_name));
+        Some(SerialNumber::dummy())
     }
-
-    serial
+    else {
+        serial
+    }
 }
 
 fn read_system_cnf(image: &mut Image) -> Result<Vec<u8>, iso9660::Error> {
