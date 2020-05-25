@@ -282,8 +282,9 @@ impl Cpu {
     /// Memory read with as little side-effect as possible. Used for
     /// debugging.
     pub fn examine<A: Addressable>(&mut self, addr: u32) -> u32 {
-
-        self.inter.load::<A>(&mut SharedState::new(), addr)
+        let mut state = SharedState::new();
+        state.should_panic = false;
+        self.inter.load::<A>(&mut state, addr)
     }
 
     /// Memory write

@@ -7,6 +7,7 @@ pub struct SharedState {
     tk: TimeKeeper,
     irq_state: InterruptState,
     counters: Counters,
+    pub should_panic: bool
 }
 
 impl SharedState {
@@ -15,6 +16,7 @@ impl SharedState {
             tk: TimeKeeper::new(),
             irq_state: InterruptState::new(),
             counters: Counters::new(),
+            should_panic: true
         }
     }
 

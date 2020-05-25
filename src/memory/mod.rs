@@ -264,7 +264,12 @@ impl Interconnect {
             return self.debug_uart.load::<A>(shared, offset);
         }
 
-        panic!("unhandled load at address {:08x}", addr);
+        if shared.should_panic {
+            panic!("unhandled load at address {:08x}", addr);
+        }
+        else {
+            return 0;
+        }
     }
 
     /// Interconnect: store `val` into `addr`
